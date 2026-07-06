@@ -58,6 +58,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 	
 	private bool _connectedReceived;
 	private bool _dataPackageLoaded;
+	private bool _locationInfoLoaded;
 	
 	private readonly List<NetworkItem> _pendingItems = [];
 	
@@ -82,6 +83,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		ConnectedReceived += OnConnectedPacket;
 		ItemsReceived += OnItemsReceived;
 		DataPackageReceived += OnDataPackage;
+		LocationInfoReceived += OnLocationInfo;
 	}
 	
 	protected override void OnDestroy()
@@ -118,6 +120,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		IsReady = false;
 		_connectedReceived = false;
 		_dataPackageLoaded = false;
+		_locationInfoLoaded = false;
 		_pendingItems.Clear();
 		Session.Reset();
 		DataPackage.InternalGames.Clear();
@@ -207,29 +210,27 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		return SendAsync( new SyncPacket() );
 	}
 	
-	public Task CheckLocation( long id )
+	public async Task CheckLocation( long id )
 	{
 		LocationChecked?.Invoke( id );
 		
-		return SendAsync( new LocationChecksPacket
+		if ( Session.TryGetSentItem( id, out var item ) )
+		{
+			ItemSent?.Invoke( item );
+		}
+		
+		await SendAsync( new LocationChecksPacket
 		{
 			Locations = [id]
 		} );
 	}
 	
-	public Task CheckLocations( IEnumerable<long> ids )
+	public async Task CheckLocations( IEnumerable<long> ids )
 	{
-		var locations = ids.ToArray();
-		
-		foreach ( var id in locations )
+		foreach ( var id in ids )
 		{
-			LocationChecked?.Invoke( id );
+			await CheckLocation( id );
 		}
-		
-		return SendAsync( new LocationChecksPacket
-		{
-			Locations = locations
-		} );
 	}
 	
 	public Task CheckLocation( NetworkItem item )
@@ -240,6 +241,29 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 	public Task CheckLocations( params long[] locations )
 	{
 		return CheckLocations( (IEnumerable<long>)locations );
+	}
+	
+	public Task ScoutLocations( IEnumerable<long> locations )
+	{
+		var list = locations.ToList();
+		
+		if ( list.Count == 0 )
+		{
+			_locationInfoLoaded = true;
+			TryBecomeReady();
+			return Task.CompletedTask;
+		}
+		
+		return SendAsync( new LocationScoutsPacket
+		{
+			Locations = list,
+			CreateAsHint = 0
+		} );
+	}
+	
+	public Task ScoutLocations( params long[] locations )
+	{
+		return ScoutLocations( (IEnumerable<long>)locations );
 	}
 	
 	public Task SetGoalCompleted()
@@ -349,6 +373,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		
 		_connectedReceived = true;
 		_ = RequestDataPackage( Session.Games.ToArray() );
+		_ = ScoutLocations( Session.CheckedLocations.Concat( Session.MissingLocations ) );
 		TryBecomeReady();
 	}
 	
@@ -375,6 +400,20 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 				_pendingItems.Add( item );
 			}
 		}
+	}
+	
+	private void OnLocationInfo( LocationInfoPacket packet )
+	{
+		foreach ( var item in packet.Locations )
+		{
+			Session.InternalSentItems[item.Location] = new SentItem
+			{
+				Location = item.Location, Item = item
+			};
+		}
+		
+		_locationInfoLoaded = true;
+		TryBecomeReady();
 	}
 	
 	private void OnDataPackage( DataPackagePacket packet )
@@ -411,7 +450,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 			return;
 		}
 		
-		if ( !_connectedReceived || !_dataPackageLoaded )
+		if ( !_connectedReceived || !_dataPackageLoaded || !_locationInfoLoaded )
 		{
 			return;
 		}

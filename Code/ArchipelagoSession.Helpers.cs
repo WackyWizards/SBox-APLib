@@ -61,4 +61,14 @@ public sealed partial class ArchipelagoSession
 	{
 		return GetSlotInfo( Slot );
 	}
+	
+	public bool TryGetSentItem( long location, out SentItem item )
+	{
+		return InternalSentItems.TryGetValue( location, out item );
+	}
+	
+	public bool HasSentItem( long location )
+	{
+		return InternalSentItems.ContainsKey( location );
+	}
 }

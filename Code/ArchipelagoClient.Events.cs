@@ -16,6 +16,8 @@ public sealed partial class ArchipelagoClient
 	
 	public event Action<NetworkItem> ItemReceived;
 	
+	public event Action<SentItem> ItemSent;
+	
 	public event Action<PrintJSONPart> PrintReceived;
 	
 	public event Action<long> LocationChecked;
@@ -50,7 +52,13 @@ public sealed partial class ArchipelagoClient
 		remove => _dispatcher.DataPackageReceived -= value;
 	}
 	
-	public event Action<object> PrintJSONReceived
+	public event Action<LocationInfoPacket> LocationInfoReceived
+	{
+		add => _dispatcher.LocationInfoReceived += value;
+		remove => _dispatcher.LocationInfoReceived -= value;
+	}
+	
+	public event Action<PrintJSONPacket> PrintJSONReceived
 	{
 		add => _dispatcher.PrintJSONReceived += value;
 		remove => _dispatcher.PrintJSONReceived -= value;

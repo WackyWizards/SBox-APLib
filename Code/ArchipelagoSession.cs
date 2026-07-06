@@ -46,6 +46,9 @@ public sealed partial class ArchipelagoSession
 	public IReadOnlyList<NetworkItem> ReceivedItems => InternalReceivedItems;
 	
 	[Hide]
+	public IReadOnlyDictionary<long, SentItem> SentItems => InternalSentItems;
+	
+	[Hide]
 	public IReadOnlyDictionary<string, object> SlotData => InternalSlotData;
 	
 	[Hide]
@@ -74,6 +77,9 @@ public sealed partial class ArchipelagoSession
 	
 	[Title( "Received Items" )]
 	internal readonly List<NetworkItem> InternalReceivedItems = [];
+	
+	[Title( "Sent Items" )]
+	internal readonly Dictionary<long, SentItem> InternalSentItems = [];
 	
 	[Hide]
 	internal readonly Dictionary<string, object> InternalSlotData = [];
@@ -105,6 +111,7 @@ public sealed partial class ArchipelagoSession
 		InternalCheckedLocations.Clear();
 		InternalMissingLocations.Clear();
 		InternalReceivedItems.Clear();
+		InternalSentItems.Clear();
 		InternalSlotData.Clear();
 		InternalSlotInfo.Clear();
 		InternalPermissions.Clear();

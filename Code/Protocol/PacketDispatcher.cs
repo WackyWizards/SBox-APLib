@@ -13,6 +13,8 @@ public sealed class PacketDispatcher
 	
 	public event Action<DataPackagePacket> DataPackageReceived;
 	
+	public event Action<LocationInfoPacket> LocationInfoReceived;
+	
 	public event Action<PrintJSONPacket> PrintJSONReceived;
 	
 	public event Action<ReceivedItemsPacket> ReceivedItems;
@@ -43,6 +45,10 @@ public sealed class PacketDispatcher
 				break;
 			case ReceivedItemsPacket receivedItems:
 				ReceivedItems?.Invoke( receivedItems );
+				
+				break;
+			case LocationInfoPacket locationInfo:
+				LocationInfoReceived?.Invoke( locationInfo );
 				
 				break;
 		}
