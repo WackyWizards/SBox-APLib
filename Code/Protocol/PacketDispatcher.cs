@@ -11,6 +11,9 @@ public sealed class PacketDispatcher
 	
 	public event Action<ConnectionRefusedPacket> ConnectionRefused;
 	
+	
+	public event Action<PrintJSONPacket> PrintJSONReceived;
+	
 	public event Action<ReceivedItemsPacket> ReceivedItems;
 	
 	public void Dispatch( APPacket packet )
@@ -27,6 +30,10 @@ public sealed class PacketDispatcher
 				break;
 			case ConnectionRefusedPacket refused:
 				ConnectionRefused?.Invoke( refused );
+				
+				break;
+			case PrintJSONPacket printJson:
+				PrintJSONReceived?.Invoke( printJson );
 				
 				break;
 			case ReceivedItemsPacket receivedItems:

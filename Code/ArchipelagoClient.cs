@@ -144,6 +144,15 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		
 		foreach ( var packet in PacketReader.Read( json ) )
 		{
+			if ( packet.Command == "PrintJSON" )
+			{
+				var printpkt = (PrintJSONPacket)packet;
+				foreach ( var part in printpkt.Data )
+				{
+					PrintReceived?.Invoke( part );
+				}
+			}
+			
 			_dispatcher.Dispatch( packet );
 		}
 	}
