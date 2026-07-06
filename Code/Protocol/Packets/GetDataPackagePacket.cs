@@ -5,8 +5,8 @@ namespace APLib.Protocol.Packets;
 
 public sealed class GetDataPackagePacket : APPacket
 {
-	[JsonPropertyName( "getdatapackage" )]
 	public override string Command => "GetDataPackage";
 	
+	[JsonPropertyName( "games" )]
 	public List<string> Games { get; set; } = [];
 }

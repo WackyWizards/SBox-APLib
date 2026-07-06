@@ -4,7 +4,6 @@ namespace APLib.Protocol.Packets;
 
 public sealed class ReceivedItemsPacket : APPacket
 {
-	[JsonPropertyName( "cmd" )]
 	public override string Command => "ReceivedItems";
 	
 	[JsonPropertyName( "items" )]

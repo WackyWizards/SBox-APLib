@@ -5,7 +5,6 @@ namespace APLib.Protocol.Packets;
 
 public sealed class DataPackagePacket : APPacket
 {
-	[JsonPropertyName( "datapackage" )]
 	public override string Command => "DataPackage";
 	
 	[JsonPropertyName( "data" )]

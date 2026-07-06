@@ -5,7 +5,6 @@ namespace APLib.Protocol.Packets;
 
 public sealed class RoomInfoPacket : APPacket
 {
-	[JsonPropertyName( "cmd" )]
 	public override string Command => "RoomInfo";
 	
 	[JsonPropertyName( "version" )]

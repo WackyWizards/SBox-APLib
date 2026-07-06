@@ -5,7 +5,6 @@ namespace APLib.Protocol.Packets;
 
 public sealed class ConnectedPacket : APPacket
 {
-	[JsonPropertyName( "cmd" )]
 	public override string Command => "Connected";
 	
 	[JsonPropertyName( "team" )]

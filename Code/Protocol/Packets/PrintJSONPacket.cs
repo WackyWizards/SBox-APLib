@@ -4,7 +4,6 @@ namespace APLib.Protocol.Packets;
 
 public sealed class PrintJSONPacket : APPacket
 {
-	[JsonPropertyName( "PrintJSON" )]
 	public override string Command => "PrintJSON";
 	
 	[JsonPropertyName( "data" )]

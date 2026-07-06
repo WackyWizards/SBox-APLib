@@ -4,7 +4,6 @@ namespace APLib.Protocol.Packets;
 
 public sealed class LocationChecksPacket : APPacket
 {
-	[JsonPropertyName( "cmd" )]
 	public override string Command => "LocationChecks";
 	
 	[JsonPropertyName( "locations" )]

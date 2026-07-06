@@ -4,7 +4,6 @@ namespace APLib.Protocol.Packets;
 
 public sealed class RoomUpdatePacket : APPacket
 {
-	[JsonPropertyName( "cmd" )]
 	public override string Command => "RoomUpdate";
 	
 	[JsonPropertyName( "checked_locations" )]

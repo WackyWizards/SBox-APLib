@@ -4,7 +4,6 @@ namespace APLib.Protocol.Packets;
 
 public class InvalidPacket : APPacket
 {
-	[JsonPropertyName( "cmd" )]
 	public override string Command => "Invalid";
 	
 	[JsonPropertyName( "type" )]
