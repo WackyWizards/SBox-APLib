@@ -439,7 +439,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		}
 		
 		_dataPackageLoaded = true;
-		Log.Info( $"Loaded {DataPackage.Games.Count} games." );
+		Log.Info( $"Loaded {DataPackage.Games.Count - 1} games." );
 		TryBecomeReady();
 	}
 	
