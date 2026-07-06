@@ -42,6 +42,12 @@ public sealed partial class ArchipelagoClient
 		remove => _dispatcher.ReceivedItems -= value;
 	}
 	
+	public event Action<DataPackagePacket> DataPackageReceived
+	{
+		add => _dispatcher.DataPackageReceived += value;
+		remove => _dispatcher.DataPackageReceived -= value;
+	}
+	
 	public event Action<object> PrintJSONReceived
 	{
 		add => _dispatcher.PrintJSONReceived += value;

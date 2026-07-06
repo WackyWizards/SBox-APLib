@@ -5,7 +5,7 @@ using Sandbox;
 
 namespace APLib;
 
-public sealed class ArchipelagoSession
+public sealed partial class ArchipelagoSession
 {
 	public int Team { get; internal set; }
 	
@@ -86,38 +86,6 @@ public sealed class ArchipelagoSession
 	
 	[Title( "Datapackage Checksums" )]
 	internal readonly Dictionary<string, string> InternalDatapackageChecksums = [];
-	
-	public bool HasCheckedLocation( long id )
-	{
-		return InternalCheckedLocations.Contains( id );
-	}
-	
-	public bool HasReceivedItem( long itemId )
-	{
-		return InternalReceivedItems.Any( x => x.Item == itemId );
-	}
-	
-	public NetworkPlayer GetPlayer( int slot )
-	{
-		return InternalPlayers.FirstOrDefault( x => x.Slot == slot );
-	}
-	
-	public NetworkPlayer CurrentPlayer()
-	{
-		return GetPlayer( Slot );
-	}
-	
-	public NetworkSlot GetSlotInfo( int slot )
-	{
-		InternalSlotInfo.TryGetValue( slot, out var info );
-		
-		return info;
-	}
-	
-	public NetworkSlot CurrentSlotInfo()
-	{
-		return GetSlotInfo( Slot );
-	}
 	
 	internal void Reset()
 	{

@@ -51,6 +51,8 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 	[Property, JsonIgnore]
 	public ArchipelagoSession Session { get; } = new();
 	
+	public ArchipelagoDataPackage DataPackage { get; } = new();
+	
 	private WebSocket _socket;
 	private readonly PacketDispatcher _dispatcher = new();
 	
@@ -71,6 +73,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		RoomInfoReceived += OnRoomInfo;
 		ConnectedReceived += OnConnectedPacket;
 		ItemsReceived += OnItemsReceived;
+		DataPackageReceived += OnDataPackage;
 	}
 	
 	protected override void OnDestroy()
@@ -147,6 +150,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 			if ( packet.Command == "PrintJSON" )
 			{
 				var printpkt = (PrintJSONPacket)packet;
+				
 				foreach ( var part in printpkt.Data )
 				{
 					PrintReceived?.Invoke( part );
@@ -330,6 +334,90 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 			Session.InternalReceivedItems.Add( item );
 			ItemReceived?.Invoke( item );
 		}
+	}
+	
+	private void OnDataPackage( DataPackagePacket packet )
+	{
+		foreach ( var pair in packet.Data.Games )
+		{
+			var game = new ArchipelagoGameData
+			{
+				Name = pair.Key
+			};
+			
+			foreach ( var item in pair.Value.ItemNameToId )
+			{
+				game.InternalItems[item.Value] = item.Key;
+			}
+			
+			foreach ( var location in pair.Value.LocationNameToId )
+			{
+				game.InternalLocations[location.Value] = location.Key;
+			}
+			
+			DataPackage.InternalGames[pair.Key] = game;
+		}
+		
+		Log.Info( $"Loaded {DataPackage.Games.Count} games." );
+	}
+	
+	public Task RequestDataPackage( params string[] games )
+	{
+		return SendAsync( new GetDataPackagePacket
+		{
+			Games = games.ToList()
+		} );
+	}
+	
+	public string GetPlayerName( int slot )
+	{
+		return Session.GetPlayerName( slot );
+	}
+	
+	public string GetItemName( long itemId, int slot )
+	{
+		var gameName = Session.GetGame( slot );
+		var game = DataPackage.GetGame( gameName );
+		
+		if ( game is null )
+		{
+			Log.Warning( $"Game '{gameName}' not found in datapackage." );
+			Log.Warning( $"Games: {DataPackage.Games.Count}" );
+			return itemId.ToString();
+		}
+		
+		var name = game.GetItemName( itemId );
+		
+		if ( name is null )
+		{
+			Log.Warning( $"Item {itemId} not found in '{game.Name}'." );
+			Log.Warning( $"Game contains {game.Items.Count} items." );
+		}
+		
+		return name ?? itemId.ToString();
+	}
+	
+	public string GetLocationName( long locationId, int slot )
+	{
+		var gameName = Session.GetGame( slot );
+		var game = DataPackage.GetGame( gameName );
+		
+		if ( game is null )
+		{
+			Log.Warning( $"Game '{gameName}' not found in datapackage." );
+			Log.Warning( $"Games: {DataPackage.Games.Count}" );
+			return locationId.ToString();
+		}
+		
+		var name = game.GetLocationName( locationId );
+		
+		if ( name is null )
+		{
+			Log.Warning( $"Location {locationId} not found in '{game.Name}'." );
+			Log.Warning( $"Game contains {game.Locations.Count} locations." );
+		}
+		
+		return name ?? locationId.ToString();
 	}
 	
 	private void DebugLog( string message, LogType type = LogType.Info )
