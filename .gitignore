@@ -1,0 +1,37 @@
+# Source 2/Sandbox stuff
+.sbox/*
+*.vpk
+*.los
+*.vmap
+accesslist.txt
+*bakeresourcecache*
+tools_*_*.bin
+tools_asset_info.bin
+tools_thumbnail_cache.bin
+
+# Ignore compiled products
+*.generated.*
+*_c
+
+# Misc stuff
+*.csproj
+*.csproj.user
+*.sln
+*.slnx
+*.sln.DotSettings.user
+*.code-workspace
+code/obj/
+code/properties/
+.intermediate/
+.idea/
+.vs/*
+.vscode/*
+code/.vs
+code/*.csproj
+Editor/obj/
+Editor/Properties/
+UnitTests/obj/
+
+# Documentation Outputs
+Documentation/generated/
+Documentation/doxygen/bin/

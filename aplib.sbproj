@@ -1,0 +1,14 @@
+{
+  "Title": "APLib",
+  "Type": "library",
+  "Org": "wizards",
+  "Ident": "aplib",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "Mounts": null,
+  "IsStandaloneOnly": false,
+  "Metadata": {}
+}
