@@ -10,6 +10,8 @@ public sealed partial class ArchipelagoClient
 	
 	public event Action OnDisconnected;
 	
+	public event Action Ready;
+	
 	public event Action<string> OnMessageReceived;
 	
 	public event Action<NetworkItem> ItemReceived;

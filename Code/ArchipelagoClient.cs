@@ -48,10 +48,18 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 	[Property, ReadOnly]
 	public bool IsAuthenticated { get; private set; }
 	
+	[Property, ReadOnly]
+	public bool IsReady { get; private set; }
+	
 	[Property, JsonIgnore]
 	public ArchipelagoSession Session { get; } = new();
 	
 	public ArchipelagoDataPackage DataPackage { get; } = new();
+	
+	private bool _connectedReceived;
+	private bool _dataPackageLoaded;
+	
+	private readonly List<NetworkItem> _pendingItems = [];
 	
 	private WebSocket _socket;
 	private readonly PacketDispatcher _dispatcher = new();
@@ -107,7 +115,12 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		
 		IsConnected = false;
 		IsAuthenticated = false;
+		IsReady = false;
+		_connectedReceived = false;
+		_dataPackageLoaded = false;
+		_pendingItems.Clear();
 		Session.Reset();
+		DataPackage.InternalGames.Clear();
 		
 		if ( _socket is not null )
 		{
@@ -124,6 +137,21 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 	
 	public async Task Login()
 	{
+		if ( IsAuthenticated )
+		{
+			return;
+		}
+		
+		var tcs = new TaskCompletionSource();
+		
+		void Handler()
+		{
+			Ready -= Handler;
+			tcs.SetResult();
+		}
+		
+		Ready += Handler;
+		
 		await SendAsync( new ConnectPacket
 		{
 			Game = Game,
@@ -137,6 +165,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 			}
 		} );
 		
+		await tcs.Task;
 		Log.Info( $"Logged in to Archipelago game {Game}" );
 	}
 	
@@ -317,6 +346,10 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 				Session.InternalSlotData[pair.Key] = pair.Value;
 			}
 		}
+		
+		_connectedReceived = true;
+		_ = RequestDataPackage( Session.Games.ToArray() );
+		TryBecomeReady();
 	}
 	
 	private void OnItemsReceived( ReceivedItemsPacket packet )
@@ -332,7 +365,15 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		foreach ( var item in packet.Items )
 		{
 			Session.InternalReceivedItems.Add( item );
-			ItemReceived?.Invoke( item );
+			
+			if ( IsReady )
+			{
+				ItemReceived?.Invoke( item );
+			}
+			else
+			{
+				_pendingItems.Add( item );
+			}
 		}
 	}
 	
@@ -358,7 +399,32 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 			DataPackage.InternalGames[pair.Key] = game;
 		}
 		
+		_dataPackageLoaded = true;
 		Log.Info( $"Loaded {DataPackage.Games.Count} games." );
+		TryBecomeReady();
+	}
+	
+	private void TryBecomeReady()
+	{
+		if ( IsReady )
+		{
+			return;
+		}
+		
+		if ( !_connectedReceived || !_dataPackageLoaded )
+		{
+			return;
+		}
+		
+		IsReady = true;
+		
+		foreach ( var item in _pendingItems )
+		{
+			ItemReceived?.Invoke( item );
+		}
+		
+		_pendingItems.Clear();
+		Ready?.Invoke();
 	}
 	
 	public Task RequestDataPackage( params string[] games )
@@ -383,6 +449,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		{
 			Log.Warning( $"Game '{gameName}' not found in datapackage." );
 			Log.Warning( $"Games: {DataPackage.Games.Count}" );
+			
 			return itemId.ToString();
 		}
 		
@@ -406,6 +473,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 		{
 			Log.Warning( $"Game '{gameName}' not found in datapackage." );
 			Log.Warning( $"Games: {DataPackage.Games.Count}" );
+			
 			return locationId.ToString();
 		}
 		
