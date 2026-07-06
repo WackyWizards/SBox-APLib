@@ -37,7 +37,7 @@ public sealed partial class ArchipelagoClient : Component, IDisposable
 	
 	[Property]
 	[Category( "Connection" )]
-	public bool UseSecureConnection { get; set; } = false;
+	public bool UseSecureConnection { get; set; } = true;
 	
 	[Property]
 	public bool Debug { get; set; } = false;
